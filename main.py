@@ -89,7 +89,12 @@ def open_web(host,port):
 if __name__ == '__main__':
     freeze_support()
     try:
+        import logging
+        # 获取 asyncio 的日志记录器
+        asyncio_logger = logging.getLogger('asyncio')
         
+        # 设置日志级别为 CRITICAL，这样只有严重错误才会被记录
+        asyncio_logger.setLevel(logging.CRITICAL)
 
         logger_thread = Process(target=logger_process,daemon=True,args=(queue,))
         logger_thread.start()
@@ -98,6 +103,19 @@ if __name__ == '__main__':
         queue_a=manager.Queue(-1)
         queue_b=manager.Queue(-1)
 
+
+
+        params["running"] = True
+        params['dgUnbinded']=True
+        startUp=StartUp(queue,params)
+        headers=startUp.run()
+        server=startUp.setDglabServer()
+        startUp.setThreads(queue_a,queue_b)
+        baseurl=startUp.config.get("baseurl")
+        client=server.client
+        wsurl =client.get_qrcode(server.get_ws_url())
+        img=server.create_qrcode(wsurl)
+        img.save('qrcode.png')
         queue.put({'text':r'''
 ------------------------------------------------------------------------
  __     __           __                      __        __            __        _______    ______   __         ______   _______  
@@ -111,13 +129,13 @@ $$  \ /$$//$$$$$$  |$$ |/$$$$$$$/ /$$$$$$  |$$ |      $$ |$$$$$$$  |$$ |_/$$/ $$
     $/     $$$$$$/  $$/  $$$$$$$/  $$$$$$$/ $$$$$$$$/ $$/ $$/   $$/ $$/   $$/ $$$$$$$/   $$$$$$/  $$$$$$$$/ $$/   $$/ $$$$$$$/  
                                                                                                                                 
                                                                                                                                 
-                                                       
+        '''+f'webUI: http://{startUp.config['api-ip']}:{startUp.config['api-port']}'+r''' 
+                                                
+        》》》》                  《《《《            
+        》》》》请保持本窗口持续开启《《《《          
+        》》》》                  《《《《                                 
     
-        》》》》                  《《《《
-        》》》》请保持本窗口持续开启《《《《
-        》》》》                  《《《《
-    
-        欢迎使用由VoiceLinkVR开发的VoiceLinkDGLAB
+        欢迎使用由VoiceLinkVR开发的VRCLS 
         本程序的开发这为boyqiu-001(boyqiu玻璃球)
         欢迎大家加入qq群1011986554获取最新资讯
         目前您使用的时公测账户,限制每日2000次请求
@@ -125,18 +143,6 @@ $$  \ /$$//$$$$$$  |$$ |/$$$$$$$/ /$$$$$$  |$$ |      $$ |$$$$$$$  |$$ |_/$$/ $$
 ------------------------------------------------------------------------
                     ''','level':'info'}
                     )
-
-        params["running"] = True
-        params['dgUnbinded']=True
-        startUp=StartUp(queue,params)
-        headers=startUp.run()
-        server=startUp.setDglabServer()
-        startUp.setThreads(queue_a,queue_b)
-        baseurl=startUp.config.get("baseurl")
-        client=server.client
-        wsurl =client.get_qrcode(server.get_ws_url())
-        img=server.create_qrcode(wsurl)
-        img.save('qrcode.png')
         queue.put({"text":"请用 DG-Lab App 扫描二维码以连接",'level':'info'})
 
         params["sourceLanguage"]=startUp.sourceLanguage

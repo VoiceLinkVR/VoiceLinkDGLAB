@@ -3,3 +3,4 @@ SpeechRecognition
 Flask
 waitress
 pydglab-ws
+qrcode[pil]
