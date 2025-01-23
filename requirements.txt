@@ -1,0 +1,5 @@
+pyaudio
+SpeechRecognition
+Flask
+waitress
+pydglab-ws
