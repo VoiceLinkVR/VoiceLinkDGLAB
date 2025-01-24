@@ -31,5 +31,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "VRCLS-windows-${{ github.ref_name }}"
+        name: "VoiceLinkDGLAB-windows-${{ github.ref_name }}"
         path: dist\  # 注意Windows路径使用反斜杠\

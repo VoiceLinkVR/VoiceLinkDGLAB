@@ -4,3 +4,4 @@ Flask
 waitress
 pydglab-ws
 qrcode[pil]
+requests
