@@ -1,0 +1,35 @@
+name: Package Python Application on Windows
+
+on:
+  push:
+    tags:
+      - 'v*' # 监听以v开头的标签，例如v1.0.0
+
+jobs:
+  build-windows:
+    runs-on: windows-latest  # 指定Windows最新版本作为运行环境
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'  
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt 
+
+    - name: Package application with PyInstaller
+      run: |
+        pyinstaller .\main.spec -y
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: "VRCLS-windows-${{ github.ref_name }}"
+        path: dist\  # 注意Windows路径使用反斜杠\

@@ -16,28 +16,30 @@ class BasicHandler(BaseHandler):
         self.controlFunction(message)
     
 
-    def action(self,script:dict):
+    def action(self,script:dict,count):
         for pattern in script.get("patterns"):
-            self.logger.put({'text':str(pattern),'level':'info'})
-            channel=pattern.get("channel")
-            if channel == 'A' or channel == 'a':self.pattern_a.put(pattern)
-            elif channel == 'B' or channel =='b':self.pattern_b.put(pattern)
+            for i in range(count):
+                channel=pattern.get("channel")
+                if channel == 'A' or channel == 'a':self.pattern_a.put(pattern)
+                elif channel == 'B' or channel =='b':self.pattern_b.put(pattern)
             
 
     def controlFunction(self,res):
         config=self.config
         logger=self.logger
-        text=res['text']
-
+        text:str=res['text']
+        counter=0
         if config["activateText"] == "":
             logger.put({"text":"无头操作:"+text,"level":"info"})
             if text == config["exitText"]:
                 exit(0)
             for script in config.get("scripts"):
-                if any( command in text  for command in script.get("text")):
-                    logger.put({"text":"执行操作:"+script["action"],"level":"info"})
+                for command in script.get("text"):
+                    counter+=text.count(command)
+                if counter != 0:
+                    logger.put({"text":f"执行操作:{script["action"]},触发次数:{counter}次","level":"info"})
                     #执行命令
-                    self.action(script)
+                    self.action(script,counter)
                     winsound.PlaySound('SystemAsterisk', winsound.SND_ALIAS)
         elif config["activateText"] in text:
             commandlist=text.split(config["activateText"])

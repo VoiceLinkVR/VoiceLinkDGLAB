@@ -26,9 +26,9 @@ class DGLabServerTread:
         try:
             self.loop.run_until_complete(self.serverStart())
         except Exception as e:
-            self.wirte_log("EEEEEEEEE:"+str(e),"error")
+            self.wirte_log("DGLabServerTread Error:"+str(e),"error")
         finally:
-            self.wirte_log("server Exit","info")
+            self.wirte_log("DGLabServerTread Exit","info")
         
     def create_qrcode(self,data):
         qr = qrcode.QRCode(
@@ -103,8 +103,6 @@ class DGLabServerTread:
 
 
 
-
-# TODO 修改成为程序的独立进程并使用process监听
 class ServerTread:
     def __init__(self,logger,client,patterns,params,queue,channel) -> None:
         super().__init__()
@@ -116,7 +114,6 @@ class ServerTread:
         self.channel=channel
 
         
-        # serverLog.info(f"server start")
 
     def run(self):
         thread = threading.Thread(target=self.run_asyncio_loop,daemon=True)
@@ -128,8 +125,10 @@ class ServerTread:
         asyncio.set_event_loop(self.loop)
         try:
             self.loop.run_until_complete(self.webSocketstart())
+        except Exception as e:
+            self.wirte_log("ServerTread Error:"+str(e),"error")
         finally:
-            self.writeLog("info","plase Exit")
+            self.writeLog("info","ServerTread Exit")
 
                 
     async def webSocketstart(self):

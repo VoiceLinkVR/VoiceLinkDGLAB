@@ -5,7 +5,7 @@ from src.core.dglab import ServerTread
 from multiprocessing import Process,Manager,freeze_support,Queue
 from src.core.process import logger_process,threaded_listen
 import time
-import json,os
+import json,os,io,base64
 import webbrowser
 
 
@@ -16,15 +16,16 @@ app = Flask(__name__,static_folder='templates')
 app.config['SECRET_KEY'] = 'your_secret_key' 
 
 def rebootJob():
-    global queue,params,listener_thread,startUp,sendClient,baseurl,headers
+    global queue,params,listener_thread,startUp,queue_a,baseurl,headers,queue_b,server
     queue.put({"text":"/reboot","level":"debug"})
-    queue.put({"text":"sound process start to complete wait for 20s|| 程序开始重启 请等待20秒 ","level":"info"})
+    queue.put({"text":"sound process start to complete wait for 20s|| 服务开始重启 请等待20秒 ","level":"info"})
     params["running"] = False
     time.sleep(20)
-    listener_thread = Process(target=threaded_listen,args=(baseurl,sendClient,startUp.config,headers,params,queue))
-    listener_thread.start()
     params["running"] = True
-    queue.put({"text":"sound process restart complete|| 程序完成重启","level":"info"})
+    startUp.setThreads(queue_a,queue_b)
+    listener_thread = Process(target=threaded_listen,args=(baseurl,startUp.config,startUp.patterns,headers,params,queue,queue_a,queue_b))
+    listener_thread.start()
+queue.put({"text":"sound process restart complete|| 服务完成重启","level":"info"})
 
 @app.route('/api/saveConfig', methods=['post'])
 def saveConfig():
@@ -50,6 +51,22 @@ def ui():
 @app.route('/<path:path>')
 def send_static(path):
     return send_from_directory(app.static_folder, path)
+
+@app.route('/api/getQRcode', methods=['get'])
+def get_image():
+
+    global img
+    
+    # 保存图片为字节流
+    byte_array = io.BytesIO()
+    img.save(byte_array, format='PNG')
+    byte_array = byte_array.getvalue()
+    
+    # 将字节流转换为Base64编码的字符串（可选，也可以直接发送字节流）
+    base64_image = base64.b64encode(byte_array).decode('utf-8')
+    
+    # 发送Base64编码的图片字符串到前端（或者你可以使用send_file发送字节流）
+    return jsonify({"image": base64_image})
 
 @app.route('/api/getQRCodeURL', methods=['get'])
 def getQRCodeURL():
@@ -83,7 +100,34 @@ def update_config():
  
 # 示例函数
 def open_web(host,port):
-    webbrowser.open(f"http://{host}:{port}")
+    
+    # 定义要打开的URL
+    url = f"http://{host}:{port}"
+    
+    # 获取Edge浏览器的可执行文件路径
+    # 不同的操作系统有不同的路径
+    edge_path = None
+    if os.name == 'nt':  # Windows系统
+        edge_path = os.path.join(os.environ.get('ProgramFiles(x86)'), 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+    elif os.uname().sysname == 'Darwin':  # macOS系统（注意：macOS上默认可能没有安装Edge）
+        # 通常需要用户手动指定Edge的路径，或者通过其他方式获取
+        # 例如：edge_path = '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+        pass  # 这里不做处理，因为路径需要用户指定
+    elif os.uname().sysname == 'Linux':  # Linux系统
+        # Linux上Edge的路径也可能需要用户手动指定
+        # 例如：edge_path = '/opt/microsoft/edge/microsoft-edge'
+        pass  # 这里不做处理，因为路径需要用户指定
+    
+    # 如果找到了Edge的路径，则使用它打开网页
+    if edge_path:
+        # 创建一个新的Edge控制器
+        edge = webbrowser.get(using=edge_path)
+        # 使用Edge控制器打开网页
+        edge.open(url)
+    else:
+        # 如果没有找到Edge的路径，则使用默认浏览器打开网页
+        webbrowser.open(url)
+ 
  
 
 if __name__ == '__main__':
@@ -118,17 +162,27 @@ if __name__ == '__main__':
         img.save('qrcode.png')
         queue.put({'text':r'''
 ------------------------------------------------------------------------
- __     __           __                      __        __            __        _______    ______   __         ______   _______  
-/  |   /  |         /  |                    /  |      /  |          /  |      /       \  /      \ /  |       /      \ /       \ 
-$$ |   $$ | ______  $$/   _______   ______  $$ |      $$/  _______  $$ |   __ $$$$$$$  |/$$$$$$  |$$ |      /$$$$$$  |$$$$$$$  |
-$$ |   $$ |/      \ /  | /       | /      \ $$ |      /  |/       \ $$ |  /  |$$ |  $$ |$$ | _$$/ $$ |      $$ |__$$ |$$ |__$$ |
-$$  \ /$$//$$$$$$  |$$ |/$$$$$$$/ /$$$$$$  |$$ |      $$ |$$$$$$$  |$$ |_/$$/ $$ |  $$ |$$ |/    |$$ |      $$    $$ |$$    $$< 
- $$  /$$/ $$ |  $$ |$$ |$$ |      $$    $$ |$$ |      $$ |$$ |  $$ |$$   $$<  $$ |  $$ |$$ |$$$$ |$$ |      $$$$$$$$ |$$$$$$$  |
-  $$ $$/  $$ \__$$ |$$ |$$ \_____ $$$$$$$$/ $$ |_____ $$ |$$ |  $$ |$$$$$$  \ $$ |__$$ |$$ \__$$ |$$ |_____ $$ |  $$ |$$ |__$$ |
-   $$$/   $$    $$/ $$ |$$       |$$       |$$       |$$ |$$ |  $$ |$$ | $$  |$$    $$/ $$    $$/ $$       |$$ |  $$ |$$    $$/ 
-    $/     $$$$$$/  $$/  $$$$$$$/  $$$$$$$/ $$$$$$$$/ $$/ $$/   $$/ $$/   $$/ $$$$$$$/   $$$$$$/  $$$$$$$$/ $$/   $$/ $$$$$$$/  
+     __     __           __                      __        __            __       
+    /  |   /  |         /  |                    /  |      /  |          /  |      
+    $$ |   $$ | ______  $$/   _______   ______  $$ |      $$/  _______  $$ |   __ 
+    $$ |   $$ |/      \ /  | /       | /      \ $$ |      /  |/       \ $$ |  /  |
+    $$  \ /$$//$$$$$$  |$$ |/$$$$$$$/ /$$$$$$  |$$ |      $$ |$$$$$$$  |$$ |_/$$/ 
+     $$  /$$/ $$ |  $$ |$$ |$$ |      $$    $$ |$$ |      $$ |$$ |  $$ |$$   $$<  
+      $$ $$/  $$ \__$$ |$$ |$$ \_____ $$$$$$$$/ $$ |_____ $$ |$$ |  $$ |$$$$$$  \ 
+       $$$/   $$    $$/ $$ |$$       |$$       |$$       |$$ |$$ |  $$ |$$ | $$  |
+        $/     $$$$$$/  $$/  $$$$$$$/  $$$$$$$/ $$$$$$$$/ $$/ $$/   $$/ $$/   $$/ 
                                                                                                                                 
-                                                                                                                                
+     _______    ______   __         ______   _______    
+    /       \  /      \ /  |       /      \ /       \ 
+    $$$$$$$  |/$$$$$$  |$$ |      /$$$$$$  |$$$$$$$  |
+    $$ |  $$ |$$ | _$$/ $$ |      $$ |__$$ |$$ |__$$ |
+    $$ |  $$ |$$ |/    |$$ |      $$    $$ |$$    $$< 
+    $$ |  $$ |$$ |$$$$ |$$ |      $$$$$$$$ |$$$$$$$  |
+    $$ |__$$ |$$ \__$$ |$$ |_____ $$ |  $$ |$$ |__$$ | 
+    $$    $$/ $$    $$/ $$       |$$ |  $$ |$$    $$/ 
+    $$$$$$$/   $$$$$$/  $$$$$$$$/ $$/   $$/ $$$$$$$/  
+                   
+
         '''+f'webUI: http://{startUp.config['api-ip']}:{startUp.config['api-port']}'+r''' 
                                                 
         》》》》                  《《《《            
