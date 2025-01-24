@@ -144,7 +144,7 @@ class ServerTread:
                 intensity= data.get("intensity")
                 takeTime=float(data.get("time"))
                 tickstime=await self.sendMessage(name,takeTime,intensity)
-                await asyncio.sleep(tickstime/10)  
+                await asyncio.sleep(tickstime/10-0.5)  
             except TimeoutError:  
                 self.writeLog("warning","Timeout,Sever cannot connect to APP,please check APP||连接超时,无法连接至APP请检查APP是否处于运行状态")
                 await asyncio.sleep(1)  

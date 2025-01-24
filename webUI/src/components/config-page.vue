@@ -185,7 +185,7 @@
                             </div>
                             
                         </template>
-                        <el-image :src="data.local.imageSrc" style="width: 300px; height: 300px" v-if="data.local.imageSrc"/>
+                        <el-image :src="data.local.imageSrc" style="min-width: 200px;width: 70%; height: auto" v-if="data.local.imageSrc" fit="contain"/>
 
                     </el-card>
                 </el-col>

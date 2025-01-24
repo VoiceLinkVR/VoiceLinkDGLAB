@@ -1,0 +1,37 @@
+{
+    "userInfo": {
+        "username": "testuser",
+        "password": "abc123!"
+    },
+    "baseurl": "https://whisper.boyqiu001.cn:7070",
+    "api-ip": "127.0.0.1",
+    "api-port": 8980,
+    "sourceLanguage": "zh",
+    "dglabServerIp": "",
+    "dglabServerPort": 56742,
+    "activateText": "",
+    "exitText": "退出程序",
+    "scripts": [
+        {
+            "action": "1",
+            "text": [
+                "测试",
+                "可以"
+            ],
+            "patterns": [
+                {
+                    "name": "呼吸",
+                    "channel": "B",
+                    "intensity": 10,
+                    "time": 2
+                },
+                {
+                    "name": "呼吸",
+                    "channel": "A",
+                    "intensity": 10,
+                    "time": 3
+                }
+            ]
+        }
+    ]
+}
