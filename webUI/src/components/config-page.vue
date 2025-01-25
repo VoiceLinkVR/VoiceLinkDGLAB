@@ -8,7 +8,7 @@
             <sideInfo/>
         </el-aside>
         <el-main>
-            <el-button-group style="margin-left:55%;margin-bottom: 20px;" >
+            <el-button-group style="margin-left:50%;margin-bottom: 20px;" >
                 <el-button type="primary" @click="getconfig">获取配置</el-button>
                 <el-button type="primary" @click="fetchImage">获取二维码</el-button>
                 <el-button type="primary" @click="saveconfig">保存配置</el-button>
@@ -281,7 +281,10 @@
                                         content="推荐从下方模型参数中复制参数路径"
                                         placement="right"
                                     > -->
-                                    <el-input v-model="item.name" placeholder="请输入波形名称"/>
+                                    <el-select v-model="item.name">
+                                        <el-option label="随机" value="random"/>
+                                        <el-option v-for="(item, index) in data.local.patternName" :key="index"    :label="item" :value="item"/>
+                                    </el-select>
                                     <!-- </el-tooltip> -->
                                 </el-descriptions-item>
                                 <el-descriptions-item>
@@ -289,6 +292,7 @@
                                         通道
                                     </template>
                                     <el-select v-model="item.channel">
+                                        <el-option label="随机" value="random"/>
                                         <el-option label="A通道" value="A"></el-option>
                                         <el-option label="B通道" value="B"></el-option>
                                     </el-select>
@@ -339,7 +343,8 @@ import { onMounted, reactive } from 'vue';
 let data=reactive({
     local:{
             imageSrc:null,
-                scriptClick:0
+            scriptClick:0,
+            patternName:[]
             },
     config:{
         "userInfo": {
@@ -384,7 +389,6 @@ let data=reactive({
 onMounted(()=>{
     getconfig();
     fetchImage();
-
 })
 function getconfig() {
     axios.get('/api/getConfig').then(response => {
@@ -394,7 +398,15 @@ function getconfig() {
         type: 'success',
     })
     });
+    axios.get('/api/getPatternName').then(response => {
+        data.local.patternName = response.data;
+        ElMessage({
+        message: '波形名称获取成功',
+        type: 'success',
+    })
+    });
 }
+
 function saveconfig(){
     axios.post('/api/saveConfig',{'config':data.config},{headers: {
     'Content-Type': 'application/json'
@@ -500,6 +512,7 @@ function fetchImage() {
         console.error('Error fetching image:', error);
       }
     }
+
 </script>
 
 <style scoped>

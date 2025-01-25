@@ -126,7 +126,7 @@ class ServerTread:
         try:
             self.loop.run_until_complete(self.webSocketstart())
         except Exception as e:
-            self.wirte_log("ServerTread Error:"+str(e),"error")
+            self.writeLog("ServerTread Error:"+str(e),"error")
         finally:
             self.writeLog("info","ServerTread Exit")
 

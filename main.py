@@ -97,7 +97,12 @@ def update_config():
     rebootJob() 
     return jsonify(config),200
 
- 
+# TODO 增加获取波形接口
+@app.route('/api/getPatternName', methods=['get'])
+def getPatternName():
+    global startUp,queue
+    queue.put({"text":"/getPatternName","level":"debug"})
+    return jsonify(list(startUp.patterns.keys())),200
 # 示例函数
 def open_web(host,port):
     

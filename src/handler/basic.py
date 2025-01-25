@@ -2,7 +2,7 @@ from typing import Optional
 from .base_handler import BaseHandler
 from multiprocessing import Queue 
 import winsound
-import time
+import random
 class BasicHandler(BaseHandler):
     def __init__(self,logger,config,pattern,params,pattern_a,pattern_b):
         self.config=config
@@ -19,9 +19,22 @@ class BasicHandler(BaseHandler):
     def action(self,script:dict,count):
         for pattern in script.get("patterns"):
             for i in range(count):
+                name=pattern.get("name")
+                sendPattern={
+                    "name":pattern.get("name"),
+                    "intensity":pattern.get("intensity"),
+                    "time":pattern.get("time")
+                }
+                if name=="random" or name=="随机":
+                    randomName=str(random.choice(list(self.pattern.keys())))
+                    self.logger.put({"text":f"随机波形：{randomName}","level":"info"})
+                    
+                    sendPattern["name"]=randomName
                 channel=pattern.get("channel")
-                if channel == 'A' or channel == 'a':self.pattern_a.put(pattern)
-                elif channel == 'B' or channel =='b':self.pattern_b.put(pattern)
+                if channel == 'random':channel=str(random.choice(["A","B"]))
+                if channel == 'A' or channel == 'a':self.pattern_a.put(sendPattern)
+                elif channel == 'B' or channel =='b':self.pattern_b.put(sendPattern)
+                
             
 
     def controlFunction(self,res):
@@ -29,6 +42,7 @@ class BasicHandler(BaseHandler):
         logger=self.logger
         text:str=res['text']
         counter=0
+        hasCommand=False
         if config["activateText"] == "":
             logger.put({"text":"无头操作:"+text,"level":"info"})
             if text == config["exitText"]:
@@ -37,10 +51,11 @@ class BasicHandler(BaseHandler):
                 for command in script.get("text"):
                     counter+=text.count(command)
                 if counter != 0:
+                    hasCommand=True
                     logger.put({"text":f"执行操作:{script["action"]},触发次数:{counter}次","level":"info"})
                     #执行命令
                     self.action(script,counter)
-                    winsound.PlaySound('SystemAsterisk', winsound.SND_ALIAS)
+                    
         elif config["activateText"] in text:
             commandlist=text.split(config["activateText"])
             command=commandlist[-1]
@@ -50,9 +65,11 @@ class BasicHandler(BaseHandler):
                 if command == config["exitText"]:
                     exit(0)
                 for script in config.get("scripts"):
-                    if command in script.get("text"):
-                        logger.put({"text":"执行操作:"+script.get("action"),"level":"info"})
-                        for vrcaction in script["vrcActions"]:
-                            type=vrcaction.get("vrcValueType")
-                            #执行命令
-                        winsound.PlaySound('SystemAsterisk', winsound.SND_ALIAS)
+                    for command in script.get("text"):
+                        counter+=text.count(command)
+                    if counter != 0:
+                        hasCommand=True
+                        logger.put({"text":f"执行操作:{script["action"]},触发次数:{counter}次","level":"info"})
+                        #执行命令
+                        self.action(script,counter)
+        if hasCommand:winsound.PlaySound('SystemAsterisk', winsound.SND_ALIAS)
