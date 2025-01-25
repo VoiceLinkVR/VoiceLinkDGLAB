@@ -122,17 +122,19 @@ def open_web(host,port):
         # Linux上Edge的路径也可能需要用户手动指定
         # 例如：edge_path = '/opt/microsoft/edge/microsoft-edge'
         pass  # 这里不做处理，因为路径需要用户指定
-    
-    # 如果找到了Edge的路径，则使用它打开网页
-    if edge_path:
-        # 创建一个新的Edge控制器
-        edge = webbrowser.get(using=edge_path)
-        # 使用Edge控制器打开网页
-        edge.open(url)
-    else:
-        # 如果没有找到Edge的路径，则使用默认浏览器打开网页
+    try:
+        # 如果找到了Edge的路径，则使用它打开网页
+        if edge_path:
+            # 创建一个新的Edge控制器
+            edge = webbrowser.get(using=edge_path)
+            # 使用Edge控制器打开网页
+            edge.open(url)
+        else:
+            # 如果没有找到Edge的路径，则使用默认浏览器打开网页
+            webbrowser.open(url)
+    except Exception :
         webbrowser.open(url)
- 
+    
  
 
 if __name__ == '__main__':
