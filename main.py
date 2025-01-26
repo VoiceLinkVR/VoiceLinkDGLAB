@@ -22,6 +22,7 @@ def rebootJob():
     params["running"] = False
     time.sleep(20)
     params["running"] = True
+    params["sourceLanguage"]=startUp.config.get("sourceLanguage")
     startUp.setThreads(queue_a,queue_b)
     listener_thread = Process(target=threaded_listen,args=(baseurl,startUp.config,startUp.patterns,headers,params,queue,queue_a,queue_b))
     listener_thread.start()
