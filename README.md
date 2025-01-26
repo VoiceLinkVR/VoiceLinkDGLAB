@@ -15,7 +15,7 @@
 
 ### 打包文件启动
 
-如没有python环境可以访问通过[下载链接](https://github.com/VoiceLinkVR/VoiceLinkDGLAB/releases)下载打包后的程序
+如没有python环境可以访问通过[下载链接](https://github.com/VoiceLinkVR/VoiceLinkDGLAB/releases)或者QQ群1011986554群文件下载打包后的程序
 
 解压压缩包后双击VoiceLinkDGLAB.exe 
 
