@@ -7,7 +7,7 @@ from src.core.process import logger_process,threaded_listen
 import time
 import json,os,io,base64
 import webbrowser
-
+import pyaudio
 
 queue=Queue(-1)
 
@@ -87,7 +87,34 @@ def getConfig():
 def reboot():
     rebootJob()
     return jsonify({'message':'sound process restart complete|| 程序完成重启'}),200
+
+@app.route('/api/getMics', methods=['get'])
+def getMics():
+    global queue
+    queue.put({"text":"/getMics","level":"debug"})
+    # 创建 PyAudio 实例
+    p = pyaudio.PyAudio()
+    host_api_count=p.get_host_api_count()
+    
+    # 获取设备数量
+    device_count = p.get_device_count()
  
+    microphones = []
+    hostapis=[]
+    for j in range(host_api_count):
+        hostapi=p.get_host_api_info_by_index(j)
+        hostapis.append(hostapi["name"])
+    for i in range(device_count):
+        # 获取每个设备的详细信息
+        dev_info = p.get_device_info_by_index(i)
+        # 检查设备是否是输入设备（麦克风）
+        if dev_info['maxInputChannels'] > 0:
+            microphones.append( f"{hostapis[dev_info['hostApi']]} - {dev_info['name']}")
+    
+    # 关闭 PyAudio 实例
+    p.terminate()
+ 
+    return jsonify(microphones),200
 
 # 处理表单提交
 @app.route('/api/saveandreboot', methods=['post'])

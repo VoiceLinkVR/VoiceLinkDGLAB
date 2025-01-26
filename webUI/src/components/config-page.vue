@@ -48,9 +48,11 @@
                                 <el-input type="number" v-model="data.config['dglabServerPort']"></el-input>
                                 </el-tooltip>
                             </el-form-item>
-
-                            <el-form-item label="程序退出文本">
-                                <el-input v-model="data.config.exitText"></el-input>
+                            <el-form-item label="麦克风">
+                                <el-select v-model="data.config.micIndex">
+                                    <el-option label="系统默认麦克风" :value="-1"></el-option>
+                                    <el-option v-for="(item,index) in data.local.micName" :key="index" :label="item" :value="index"></el-option>
+                                </el-select>
                             </el-form-item>
                             <el-form-item label="识别语言">
                                 <el-select v-model="data.config.sourceLanguage">
@@ -156,6 +158,11 @@
                                     <el-option label="中文(Chinese)" value="zh"></el-option>
                                 </el-select>
                             </el-form-item>
+                            <el-form-item label="程序退出文本">
+                                <el-input v-model="data.config.exitText"></el-input>
+                            </el-form-item>
+
+
                         </el-form>
                     </el-card>
                 </el-col>
@@ -344,7 +351,8 @@ let data=reactive({
     local:{
             imageSrc:null,
             scriptClick:0,
-            patternName:[]
+            patternName:[],
+            micName:[]
             },
     config:{
         "userInfo": {
@@ -358,6 +366,7 @@ let data=reactive({
         "dglabServerIp":"",
         "dglabServerPort":56742,
         "activateText":"",
+        "micIndex":-1,
         "exitText":"退出程序",
         "scripts": [
             {
@@ -402,6 +411,13 @@ function getconfig() {
         data.local.patternName = response.data;
         ElMessage({
         message: '波形名称获取成功',
+        type: 'success',
+    })
+    });
+    axios.get('/api/getMics').then(response => {
+        data.local.micName = response.data;
+        ElMessage({
+        message: '麦克风名称获取成功',
         type: 'success',
     })
     });

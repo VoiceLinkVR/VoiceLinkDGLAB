@@ -6,6 +6,7 @@ defaultConfig={
     "baseurl": "https://whisper.boyqiu001.cn:7070",
     "api-ip":"127.0.0.1",
     "api-port":8980,
+    "micIndex":-1,
     "sourceLanguage": "zh",
     "dglabServerIp":"",
     "dglabServerPort":56742,
